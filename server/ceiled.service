@@ -1,0 +1,9 @@
+[Unit]
+Description=Ceiling LED Server
+
+[Service]
+Type=simple
+ExecStart=/home/pi/src/github.com/brianfoshee/ceiled/server/server -port 80
+
+[Install]
+WantedBy=multi-user.target

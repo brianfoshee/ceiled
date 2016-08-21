@@ -3,31 +3,93 @@ package main
 import (
 	"flag"
 	"fmt"
+	"html/template"
 	"log"
 	"net/http"
+	"strconv"
+	"sync"
 )
+
+type LED struct {
+	Brightness uint8
+	White      uint8
+	Red        uint8
+	Green      uint8
+	Blue       uint8
+	mu         *sync.RWMutex
+}
+
+func (l *LED) Set(br, w, r, g, b uint8) {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+
+	l.Brightness = br
+	l.White = w
+	l.Red = r
+	l.Green = g
+	l.Blue = b
+}
 
 func main() {
 	port := flag.String("port", "8080", "Port for server to list on")
 	flag.Parse()
 
+	l := LED{
+		Brightness: 32,
+		White:      255,
+		Red:        0,
+		Green:      0,
+		Blue:       0,
+		mu:         &sync.RWMutex{},
+	}
+
+	idxtempl, err := template.New("index").Parse(index)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == "GET" {
-			fmt.Fprintf(w, index)
+			l.mu.RLock()
+			defer l.mu.RUnlock()
+			err := idxtempl.Execute(w, l)
+			if err != nil {
+				fmt.Println(err)
+			}
 		} else if r.Method == "POST" {
 			if err := r.ParseForm(); err != nil {
-				fmt.Fprintf(w, "error reading form values")
+				fmt.Fprintf(w, "error reading form values %s", err)
 				return
 			}
 
-			bright := r.Form.Get("brightness")
-			white := r.PostForm.Get("white")
-			red := r.PostForm.Get("red")
-			green := r.PostForm.Get("green")
-			blue := r.PostForm.Get("blue")
+			bright, err := strconv.ParseUint(r.Form.Get("brightness"), 10, 8)
+			if err != nil {
+				fmt.Fprintf(w, "error parsing brightness %s", err)
+				return
+			}
+			white, err := strconv.ParseUint(r.PostForm.Get("white"), 10, 8)
+			if err != nil {
+				fmt.Fprintf(w, "error parsing white %s", err)
+				return
+			}
+			red, err := strconv.ParseUint(r.PostForm.Get("red"), 10, 8)
+			if err != nil {
+				fmt.Fprintf(w, "error parsing red %s", err)
+				return
+			}
+			green, err := strconv.ParseUint(r.PostForm.Get("green"), 10, 8)
+			if err != nil {
+				fmt.Fprintf(w, "error parsing green %s", err)
+				return
+			}
+			blue, err := strconv.ParseUint(r.PostForm.Get("blue"), 10, 8)
+			if err != nil {
+				fmt.Fprintf(w, "error parsing blue %s", err)
+				return
+			}
 
-			fmt.Printf("brightness: %s, white: %s, red: %s, green: %s, blue: %s\n",
-				bright, white, red, green, blue)
+			l.Set(uint8(bright), uint8(white), uint8(red), uint8(green), uint8(blue))
 
 			http.Redirect(w, r, "/", http.StatusFound)
 
@@ -46,27 +108,27 @@ const index = `
   <body>
     <form action="/" method="post">
       <div>
-        <input id="brightness" name="brightness" type="range" min="0" max="255" step="1" value="0" />
+        <input id="brightness" name="brightness" type="range" min="0" max="255" step="1" value="{{ .Brightness }}" />
         <label for="brightness">Brightness</label>
       </div>
 
       <div>
-        <input id="white" name="white" type="range" min="0" max="255" step="1" value="0" />
+        <input id="white" name="white" type="range" min="0" max="255" step="1" value="{{ .White }}" />
         <label for="white">W</label>
       </div>
 
       <div>
-        <input id="red" name="red" type="range" min="0" max="255" step="1" value="0" />
+        <input id="red" name="red" type="range" min="0" max="255" step="1" value="{{ .Red }}" />
         <label for="red">R</label>
       </div>
 
       <div>
-        <input id="green" name="green" type="range" min="0" max="255" step="1" value="0" />
+        <input id="green" name="green" type="range" min="0" max="255" step="1" value="{{ .Green }}" />
         <label for="green">G</label>
       </div>
 
       <div>
-        <input id="blue" name="blue" type="range" min="0" max="255" step="1" value="0" />
+        <input id="blue" name="blue" type="range" min="0" max="255" step="1" value="{{ .Blue }}" />
         <label for="blue">B</label>
       </div>
 

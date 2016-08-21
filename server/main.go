@@ -16,7 +16,7 @@ type LED struct {
 	Red        uint8
 	Green      uint8
 	Blue       uint8
-	mu         *sync.RWMutex
+	mu         sync.RWMutex
 }
 
 func (l *LED) Set(br, w, r, g, b uint8) {
@@ -40,7 +40,7 @@ func main() {
 		Red:        0,
 		Green:      0,
 		Blue:       0,
-		mu:         &sync.RWMutex{},
+		mu:         sync.RWMutex{},
 	}
 
 	idxtempl, err := template.New("index").Parse(index)

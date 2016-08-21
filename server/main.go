@@ -90,10 +90,9 @@ func main() {
 			}
 
 			l.Set(uint8(bright), uint8(white), uint8(red), uint8(green), uint8(blue))
+			l.Render()
 
 			http.Redirect(w, r, "/", http.StatusFound)
-
-			// TODO send to led package
 		}
 	})
 

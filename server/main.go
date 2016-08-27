@@ -104,9 +104,30 @@ const index = `
 <html>
   <head>
 	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<style>
+		form {
+			width: 216px;
+			position: relative;
+		}
+
+		label {
+			float: left;
+			text-align: right;
+			margin-right: 15px;
+			width: 68px;
+		}
+
+		button {
+			float: right;
+		}
+	</style>
   </head>
   <body>
     <form action="/" method="post">
+      <!--
+        <input id="brightness" name="brightness" type="range" min="0" max="255" step="1" value="128" oninput="brightnessInput.value=brightness.value"/>
+        <input id="brightnessInput" name="brightnessInput" type="text" for="brightness" value="128" oninput="brightness.value=brightnessInput.value" />
+      -->
       <div>
         <input id="brightness" name="brightness" type="range" min="0" max="255" step="1" value="{{ .Brightness }}" />
         <label for="brightness">Brightness</label>
@@ -114,22 +135,22 @@ const index = `
 
       <div>
         <input id="white" name="white" type="range" min="0" max="255" step="1" value="{{ .White }}" />
-        <label for="white">W</label>
+        <label for="white">White</label>
       </div>
 
       <div>
         <input id="red" name="red" type="range" min="0" max="255" step="1" value="{{ .Red }}" />
-        <label for="red">R</label>
+        <label for="red">Red</label>
       </div>
 
       <div>
         <input id="green" name="green" type="range" min="0" max="255" step="1" value="{{ .Green }}" />
-        <label for="green">G</label>
+        <label for="green">Green</label>
       </div>
 
       <div>
         <input id="blue" name="blue" type="range" min="0" max="255" step="1" value="{{ .Blue }}" />
-        <label for="blue">B</label>
+        <label for="blue">Blue</label>
       </div>
 
       <button type="submit">Set</button>

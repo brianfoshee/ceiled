@@ -18,10 +18,10 @@ type X struct {
 	Bars       []Bar
 	Brightness int
 	lights     []uint32
-	mu         sync.RWMutex
+	mu         *sync.RWMutex
 }
 
-func (x *X) prepare() {
+func (x X) prepare() {
 	x.mu.Lock()
 	defer x.mu.Unlock()
 

@@ -19,7 +19,7 @@ func (x X) Render() {
 	ws2811.Wait()
 }
 
-func (x X) Open() {
+func (x *X) Open() {
 	var count int
 	for _, b := range x.Bars {
 		count += len(b.Lights)

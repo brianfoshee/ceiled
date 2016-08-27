@@ -1,13 +1,23 @@
 package light
 
-import "fmt"
+import (
+	"fmt"
+	"sync"
+)
 
 func (x X) Render() {
 	x.prepare()
 	fmt.Println("rendering")
 }
 
-func (x X) Open() {
+func (x *X) Open() {
+	var count int
+	for _, b := range x.Bars {
+		count += len(b.Lights)
+	}
+
+	x.lights = make([]uint32, count, count)
+	x.mu = &sync.RWMutex{}
 	fmt.Println("Opening")
 }
 

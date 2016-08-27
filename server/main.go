@@ -76,7 +76,6 @@ func main() {
 	x.Open()
 
 	l := LED{}
-	l.Set(&x, 32, 255, 0, 0, 0)
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == "GET" {

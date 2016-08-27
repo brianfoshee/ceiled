@@ -1,7 +1,6 @@
 package light
 
 import (
-	"fmt"
 	"image/color"
 	"sync"
 )
@@ -20,19 +19,6 @@ type X struct {
 	Brightness int
 	lights     []uint32
 	mu         *sync.RWMutex
-}
-
-func (x X) Render() {
-	x.prepare()
-	fmt.Println("rendering")
-}
-
-func (x X) Open() {
-	fmt.Println("Opening")
-}
-
-func (x X) Close() {
-	fmt.Println("Closing")
 }
 
 func (x X) prepare() {

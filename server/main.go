@@ -36,12 +36,13 @@ func (l *LED) Set(x *light.X, br, w, r, g, b uint8) {
 	l.Blue = b
 
 	x.Brightness = int(br)
-	for _, bar := range x.Bars {
-		for _, l := range bar.Lights {
-			l.Color.R = r
-			l.Color.G = g
-			l.Color.B = b
-			l.White = w
+
+	for i := 0; i < len(x.Bars); i++ {
+		for j := 0; j < len(x.Bars[i].Lights); j++ {
+			x.Bars[i].Lights[j].Color.R = r
+			x.Bars[i].Lights[j].Color.G = g
+			x.Bars[i].Lights[j].Color.B = b
+			x.Bars[i].Lights[j].White = w
 		}
 	}
 }

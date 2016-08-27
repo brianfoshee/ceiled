@@ -12,6 +12,8 @@ import (
 	"strconv"
 	"sync"
 	"syscall"
+
+	"github.com/brianfoshee/ceiled/light"
 )
 
 type LED struct {
@@ -20,14 +22,12 @@ type LED struct {
 	Red        uint8
 	Green      uint8
 	Blue       uint8
-	count      int
-	leds       []uint32
-	mu         sync.RWMutex
+	sync.RWMutex
 }
 
-func (l *LED) Set(br, w, r, g, b uint8) {
-	l.mu.Lock()
-	defer l.mu.Unlock()
+func (l *LED) Set(x *light.X, br, w, r, g, b uint8) {
+	l.Lock()
+	defer l.Unlock()
 
 	l.Brightness = br
 	l.White = w
@@ -35,14 +35,14 @@ func (l *LED) Set(br, w, r, g, b uint8) {
 	l.Green = g
 	l.Blue = b
 
-	var color uint32
-	color = uint32(l.White) << 24
-	color = color | uint32(l.Red)<<16
-	color = color | uint32(l.Green)<<8
-	color = color | uint32(l.Blue)
-
-	for i := 0; i < l.count; i++ {
-		l.leds[i] = color
+	x.Brightness = int(br)
+	for _, bar := range x.Bars {
+		for _, l := range bar.Lights {
+			l.Color.R = r
+			l.Color.G = g
+			l.Color.B = b
+			l.White = w
+		}
 	}
 }
 
@@ -56,17 +56,31 @@ func main() {
 		return
 	}
 
-	l := LED{
-		count: 238,
-		leds:  make([]uint32, 238, 238),
+	x := light.X{
+		Bars: []light.Bar{
+			{
+				Lights: make([]light.Light, 60, 60),
+			},
+			{
+				Lights: make([]light.Light, 60, 60),
+			},
+			{
+				Lights: make([]light.Light, 58, 58),
+			},
+			{
+				Lights: make([]light.Light, 60, 60),
+			},
+		},
 	}
-	l.Set(32, 255, 0, 0, 0)
-	l.Open()
+	x.Open()
+
+	l := LED{}
+	l.Set(&x, 32, 255, 0, 0, 0)
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == "GET" {
-			l.mu.RLock()
-			defer l.mu.RUnlock()
+			l.RLock()
+			defer l.RUnlock()
 			err := idxtempl.Execute(w, l)
 			if err != nil {
 				fmt.Println(err)
@@ -103,8 +117,8 @@ func main() {
 				return
 			}
 
-			l.Set(uint8(bright), uint8(white), uint8(red), uint8(green), uint8(blue))
-			l.Render()
+			l.Set(&x, uint8(bright), uint8(white), uint8(red), uint8(green), uint8(blue))
+			x.Render()
 
 			http.Redirect(w, r, "/", http.StatusFound)
 		}
@@ -126,7 +140,7 @@ func main() {
 		// Block until signal is received
 		<-c
 		// Close LED things
-		l.Close()
+		x.Close()
 		// Close TCP Listener
 		if err := listener.Close(); err != nil {
 			log.Println(err)

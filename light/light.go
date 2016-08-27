@@ -3,6 +3,7 @@ package light
 import (
 	"fmt"
 	"image/color"
+	"sync"
 )
 
 type Light struct {
@@ -18,9 +19,11 @@ type X struct {
 	Bars       []Bar
 	Brightness int
 	lights     []uint32
+	mu         *sync.RWMutex
 }
 
 func (x X) Render() {
+	x.prepare()
 	fmt.Println("rendering")
 }
 
@@ -33,14 +36,14 @@ func (x X) Close() {
 }
 
 func (x X) prepare() {
-	// loop through Bars.LED and combine the values
+	x.mu.Lock()
+	defer x.mu.Unlock()
+
+	// Combine all Light values on each Bar into a []uint32
 	var c uint32
-	var l Light
 	var offset int
-	for i := 0; i < len(x.Bars); i++ {
-		bl := len(x.Bars[i].Lights)
-		for j := 0; j < bl; j++ {
-			l = x.Bars[i].Lights[j]
+	for _, b := range x.Bars {
+		for j, l := range b.Lights {
 			c = uint32(l.White) << 24
 			c = c | uint32(l.Color.R)<<16
 			c = c | uint32(l.Color.G)<<8
@@ -48,6 +51,6 @@ func (x X) prepare() {
 			// insert color at its correct index
 			x.lights[offset+j] = c
 		}
-		offset += bl
+		offset += len(b.Lights)
 	}
 }

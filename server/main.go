@@ -57,14 +57,10 @@ func main() {
 	}
 
 	l := LED{
-		Brightness: 32,
-		White:      255,
-		Red:        0,
-		Green:      0,
-		Blue:       0,
-		count:      238,
-		leds:       make([]uint32, 238, 238),
+		count: 238,
+		leds:  make([]uint32, 238, 238),
 	}
+	l.Set(32, 255, 0, 0, 0)
 	l.Open()
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {

@@ -11,3 +11,11 @@ func (l LED) Render() {
 	fmt.Printf("Color: %X, Brightness: %d, W: %d, R: %d, G: %d, B: %d\n",
 		color, l.Brightness, l.White, l.Red, l.Green, l.Blue)
 }
+
+func (l LED) Open() {
+	fmt.Println("Opening LEDs")
+}
+
+func (l LED) Close() {
+	fmt.Println("Closing LEDs")
+}

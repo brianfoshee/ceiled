@@ -5,9 +5,13 @@ import (
 	"fmt"
 	"html/template"
 	"log"
+	"net"
 	"net/http"
+	"os"
+	"os/signal"
 	"strconv"
 	"sync"
+	"syscall"
 )
 
 type LED struct {
@@ -34,6 +38,12 @@ func main() {
 	port := flag.String("port", "8080", "Port for server to list on")
 	flag.Parse()
 
+	idxtempl, err := template.New("index").Parse(index)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
 	l := LED{
 		Brightness: 32,
 		White:      255,
@@ -42,12 +52,7 @@ func main() {
 		Blue:       0,
 		mu:         sync.RWMutex{},
 	}
-
-	idxtempl, err := template.New("index").Parse(index)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
+	l.Open()
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == "GET" {
@@ -96,7 +101,35 @@ func main() {
 		}
 	})
 
-	log.Fatal(http.ListenAndServe(":"+*port, nil))
+	addr, err := net.ResolveTCPAddr("tcp", ":"+*port)
+	if err != nil {
+		log.Fatal(err)
+	}
+	listener, err := net.ListenTCP("tcp", addr)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	c := make(chan os.Signal, 1)
+	done := make(chan struct{})
+	signal.Notify(c, syscall.SIGTERM, syscall.SIGINT)
+	go func() {
+		// Block until signal is received
+		<-c
+		// Close LED things
+		l.Close()
+		// Close TCP Listener
+		if err := listener.Close(); err != nil {
+			log.Println(err)
+		}
+		// Proceed with exiting the program
+		done <- struct{}{}
+	}()
+
+	if err := http.Serve(listener, nil); err != nil {
+		fmt.Println(err)
+	}
+	<-done
 }
 
 const index = `

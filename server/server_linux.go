@@ -13,7 +13,7 @@ func (l LED) Render() {
 	color = color | uint32(l.Green)<<8
 	color = color | uint32(l.Blue)
 
-	for i := 0; i < 120; i++ {
+	for i := 0; i < 238; i++ {
 		ws2811.SetLed(i, color)
 	}
 	ws2811.Render()

@@ -7,16 +7,8 @@ import (
 )
 
 func (l LED) Render() {
-	var color uint32
-	color = uint32(l.White) << 24
-	color = color | uint32(l.Red)<<16
-	color = color | uint32(l.Green)<<8
-	color = color | uint32(l.Blue)
-
 	ws2811.SetBrightness(int(l.Brightness))
-	for i := 0; i < 238; i++ {
-		ws2811.SetLed(i, color)
-	}
+	ws2811.SetBitmap(l.leds)
 	ws2811.Render()
 	ws2811.Wait()
 }

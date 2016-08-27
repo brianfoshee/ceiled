@@ -20,6 +20,8 @@ type LED struct {
 	Red        uint8
 	Green      uint8
 	Blue       uint8
+	count      int
+	leds       []uint32
 	mu         sync.RWMutex
 }
 
@@ -32,6 +34,16 @@ func (l *LED) Set(br, w, r, g, b uint8) {
 	l.Red = r
 	l.Green = g
 	l.Blue = b
+
+	var color uint32
+	color = uint32(l.White) << 24
+	color = color | uint32(l.Red)<<16
+	color = color | uint32(l.Green)<<8
+	color = color | uint32(l.Blue)
+
+	for i := 0; i < l.count; i++ {
+		l.leds[i] = color
+	}
 }
 
 func main() {
@@ -50,7 +62,8 @@ func main() {
 		Red:        0,
 		Green:      0,
 		Blue:       0,
-		mu:         sync.RWMutex{},
+		count:      238,
+		leds:       make([]uint32, 238, 238),
 	}
 	l.Open()
 

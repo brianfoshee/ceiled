@@ -23,9 +23,26 @@ type LED struct {
 	Green      uint8
 	Blue       uint8
 	sync.RWMutex
+
+	Bar0, Bar1, Bar2, Bar3 light.BarStatus
 }
 
-func (l *LED) Set(x *light.X, br, w, r, g, b uint8) {
+func (l *LED) SetPower(x *light.X, b0, b1, b2, b3 light.BarStatus) {
+	l.Lock()
+	defer l.Unlock()
+
+	l.Bar0 = b0
+	l.Bar1 = b1
+	l.Bar2 = b2
+	l.Bar3 = b3
+
+	x.Bars[0].SetStatus(b0)
+	x.Bars[1].SetStatus(b1)
+	x.Bars[2].SetStatus(b2)
+	x.Bars[3].SetStatus(b3)
+}
+
+func (l *LED) SetColor(x *light.X, br, w, r, g, b uint8) {
 	l.Lock()
 	defer l.Unlock()
 
@@ -59,18 +76,10 @@ func main() {
 
 	x := light.X{
 		Bars: []light.Bar{
-			{
-				Lights: make([]light.Light, 60, 60),
-			},
-			{
-				Lights: make([]light.Light, 60, 60),
-			},
-			{
-				Lights: make([]light.Light, 58, 58),
-			},
-			{
-				Lights: make([]light.Light, 60, 60),
-			},
+			{Lights: make([]light.Light, 60, 60)},
+			{Lights: make([]light.Light, 60, 60)},
+			{Lights: make([]light.Light, 58, 58)},
+			{Lights: make([]light.Light, 60, 60)},
 		},
 	}
 	x.Open()
@@ -117,7 +126,30 @@ func main() {
 				return
 			}
 
-			l.Set(&x, uint8(bright), uint8(white), uint8(red), uint8(green), uint8(blue))
+			var b0, b1, b2, b3 light.BarStatus
+
+			v, ok := r.Form["bar0"]
+			if ok && len(v) > 0 && v[0] == "on" {
+				b0 = light.BarStatusOn
+			}
+
+			v, ok = r.Form["bar1"]
+			if ok && len(v) > 0 && v[0] == "on" {
+				b1 = light.BarStatusOn
+			}
+
+			v, ok = r.Form["bar2"]
+			if ok && len(v) > 0 && v[0] == "on" {
+				b2 = light.BarStatusOn
+			}
+
+			v, ok = r.Form["bar3"]
+			if ok && len(v) > 0 && v[0] == "on" {
+				b3 = light.BarStatusOn
+			}
+
+			l.SetPower(&x, b0, b1, b2, b3)
+			l.SetColor(&x, uint8(bright), uint8(white), uint8(red), uint8(green), uint8(blue))
 			x.Render()
 
 			http.Redirect(w, r, "/", http.StatusFound)
@@ -208,6 +240,13 @@ const index = `
         <input id="blue" name="blue" type="range" min="0" max="255" step="1" value="{{ .Blue }}" />
         <label for="blue">Blue</label>
       </div>
+
+	  <div>
+		<input id="bar0" name="bar0" type="checkbox" {{ if eq .Bar0 1 }} checked {{ end }} />
+		<input id="bar1" name="bar1" type="checkbox" {{ if eq .Bar1 1 }} checked {{ end }} />
+		<input id="bar2" name="bar2" type="checkbox" {{ if eq .Bar2 1 }} checked {{ end }} />
+		<input id="bar3" name="bar3" type="checkbox" {{ if eq .Bar3 1 }} checked {{ end }} />
+	  </div>
 
       <button type="submit">Set</button>
     </form>

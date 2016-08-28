@@ -274,7 +274,7 @@ const index = `
 		function submit() {
 			var xhr = new XMLHttpRequest();
 			xhr.open(form.method, form.action, true);
-			xhr.onload = function(){ console.log(xhr.responseText); }
+			// xhr.onload = function(){ console.log(xhr.responseText); }
 			const formData = new FormData(form);
 			xhr.send(formData);
 		}

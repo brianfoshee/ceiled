@@ -293,6 +293,18 @@ const index = `
 
 		const white = document.getElementById("white");
 		white.onchange = submit;
+
+		const bar0 = document.getElementById("bar0");
+		bar0.onchange = submit;
+
+		const bar1 = document.getElementById("bar1");
+		bar1.onchange = submit;
+
+		const bar2 = document.getElementById("bar2");
+		bar2.onchange = submit;
+
+		const bar3 = document.getElementById("bar3");
+		bar3.onchange = submit;
 	</script>
   </body>
 </html>

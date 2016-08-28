@@ -106,11 +106,13 @@ func main() {
 			r.ParseMultipartForm(1024 * 10)
 
 			formValue := func(r *http.Request, e string) string {
-				mf, ok := r.MultipartForm.Value["brightness"]
-				if ok && len(mf) > 0 {
-					return mf[0]
+				if r.MultipartForm != nil {
+					mf, ok := r.MultipartForm.Value[e]
+					if ok && len(mf) > 0 {
+						return mf[0]
+					}
 				}
-				return r.Form.Get("brightness")
+				return r.Form.Get(e)
 			}
 
 			bright, err := strconv.ParseUint(formValue(r, "brightness"), 10, 8)

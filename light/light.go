@@ -39,12 +39,12 @@ type X struct {
 	Bars       []Bar
 	Brightness int
 	lights     []uint32
-	mu         *sync.RWMutex
+	Mu         *sync.RWMutex
 }
 
 func (x X) prepare() {
-	x.mu.Lock()
-	defer x.mu.Unlock()
+	x.Mu.Lock()
+	defer x.Mu.Unlock()
 
 	// Combine all Light values on each Bar into a []uint32
 	var c uint32

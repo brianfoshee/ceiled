@@ -54,6 +54,7 @@ func (l *LED) SetColor(x *light.X, br, w, r, g, b uint8) {
 
 	x.Brightness = int(br)
 
+	x.Mu.Lock()
 	for i := 0; i < len(x.Bars); i++ {
 		for j := 0; j < len(x.Bars[i].Lights); j++ {
 			x.Bars[i].Lights[j].Color.R = r
@@ -62,6 +63,7 @@ func (l *LED) SetColor(x *light.X, br, w, r, g, b uint8) {
 			x.Bars[i].Lights[j].White = w
 		}
 	}
+	x.Mu.Unlock()
 }
 
 func main() {
@@ -100,27 +102,38 @@ func main() {
 				return
 			}
 
-			bright, err := strconv.ParseUint(r.Form.Get("brightness"), 10, 8)
+			r.ParseForm()
+			r.ParseMultipartForm(1024 * 10)
+
+			formValue := func(r *http.Request, e string) string {
+				mf, ok := r.MultipartForm.Value["brightness"]
+				if ok && len(mf) > 0 {
+					return mf[0]
+				}
+				return r.Form.Get("brightness")
+			}
+
+			bright, err := strconv.ParseUint(formValue(r, "brightness"), 10, 8)
 			if err != nil {
 				fmt.Fprintf(w, "error parsing brightness %s", err)
 				return
 			}
-			white, err := strconv.ParseUint(r.PostForm.Get("white"), 10, 8)
+			white, err := strconv.ParseUint(formValue(r, "white"), 10, 8)
 			if err != nil {
 				fmt.Fprintf(w, "error parsing white %s", err)
 				return
 			}
-			red, err := strconv.ParseUint(r.PostForm.Get("red"), 10, 8)
+			red, err := strconv.ParseUint(formValue(r, "red"), 10, 8)
 			if err != nil {
 				fmt.Fprintf(w, "error parsing red %s", err)
 				return
 			}
-			green, err := strconv.ParseUint(r.PostForm.Get("green"), 10, 8)
+			green, err := strconv.ParseUint(formValue(r, "green"), 10, 8)
 			if err != nil {
 				fmt.Fprintf(w, "error parsing green %s", err)
 				return
 			}
-			blue, err := strconv.ParseUint(r.PostForm.Get("blue"), 10, 8)
+			blue, err := strconv.ParseUint(formValue(r, "blue"), 10, 8)
 			if err != nil {
 				fmt.Fprintf(w, "error parsing blue %s", err)
 				return
@@ -150,7 +163,9 @@ func main() {
 
 			l.SetPower(&x, b0, b1, b2, b3)
 			l.SetColor(&x, uint8(bright), uint8(white), uint8(red), uint8(green), uint8(blue))
-			x.Render()
+			go func() {
+				x.Render()
+			}()
 
 			http.Redirect(w, r, "/", http.StatusFound)
 		}
@@ -211,7 +226,7 @@ const index = `
 	</style>
   </head>
   <body>
-    <form action="/" method="post">
+    <form id="lights" action="/" method="post">
       <!--
         <input id="brightness" name="brightness" type="range" min="0" max="255" step="1" value="128" oninput="brightnessInput.value=brightness.value"/>
         <input id="brightnessInput" name="brightnessInput" type="text" for="brightness" value="128" oninput="brightness.value=brightnessInput.value" />
@@ -250,6 +265,33 @@ const index = `
 
       <button type="submit">Set</button>
     </form>
+
+	<script>
+		const form = document.getElementById("lights");
+
+		function submit() {
+			var xhr = new XMLHttpRequest();
+			xhr.open(form.method, form.action, true);
+			xhr.onload = function(){ console.log(xhr.responseText); }
+			const formData = new FormData(form);
+			xhr.send(formData);
+		}
+
+		const brightness = document.getElementById("brightness");
+		brightness.onchange = submit;
+
+		const red = document.getElementById("red");
+		red.onchange = submit;
+
+		const green = document.getElementById("green");
+		green.onchange = submit;
+
+		const blue = document.getElementById("blue");
+		blue.onchange = submit;
+
+		const white = document.getElementById("white");
+		white.onchange = submit;
+	</script>
   </body>
 </html>
 `

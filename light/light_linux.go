@@ -10,8 +10,8 @@ import (
 func (x X) Render() {
 	x.prepare()
 
-	x.mu.RLock()
-	defer x.mu.RUnlock()
+	x.Mu.RLock()
+	defer x.Mu.RUnlock()
 
 	ws2811.SetBrightness(x.Brightness)
 	ws2811.SetBitmap(x.lights)
@@ -26,7 +26,7 @@ func (x *X) Open() {
 	}
 
 	x.lights = make([]uint32, count, count)
-	x.mu = &sync.RWMutex{}
+	x.Mu = &sync.RWMutex{}
 
 	ws2811.Init(18, count, x.Brightness)
 	ws2811.Clear()

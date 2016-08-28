@@ -17,7 +17,7 @@ func (x *X) Open() {
 	}
 
 	x.lights = make([]uint32, count, count)
-	x.mu = &sync.RWMutex{}
+	x.Mu = &sync.RWMutex{}
 	fmt.Println("Opening")
 }
 

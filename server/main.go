@@ -279,32 +279,15 @@ const index = `
 			xhr.send(formData);
 		}
 
-		const brightness = document.getElementById("brightness");
-		brightness.onchange = submit;
-
-		const red = document.getElementById("red");
-		red.onchange = submit;
-
-		const green = document.getElementById("green");
-		green.onchange = submit;
-
-		const blue = document.getElementById("blue");
-		blue.onchange = submit;
-
-		const white = document.getElementById("white");
-		white.onchange = submit;
-
-		const bar0 = document.getElementById("bar0");
-		bar0.onchange = submit;
-
-		const bar1 = document.getElementById("bar1");
-		bar1.onchange = submit;
-
-		const bar2 = document.getElementById("bar2");
-		bar2.onchange = submit;
-
-		const bar3 = document.getElementById("bar3");
-		bar3.onchange = submit;
+		document.getElementById("brightness").onchange = submit;
+		document.getElementById("red").onchange = submit;
+		document.getElementById("green").onchange = submit;
+		document.getElementById("blue").onchange = submit;
+		document.getElementById("white").onchange = submit;
+		document.getElementById("bar0").onchange = submit;
+		document.getElementById("bar1").onchange = submit;
+		document.getElementById("bar2").onchange = submit;
+		document.getElementById("bar3").onchange = submit;
 	</script>
   </body>
 </html>
